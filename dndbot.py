@@ -16,15 +16,16 @@ bot = commands.Bot(command_prefix='!')
 timeout_seconds = 120
 reaction_waiters = {}
 
+reaction_emoji = ["{}\N{COMBINING ENCLOSING KEYCAP}".format(num) for num in range(1, 9)]
+
 print("started!")
 
-def get_spell(spells):
-	roll = random.randint(1, 8)
-	if roll == 7:
-		spell = "OVADRIVE"
+def get_spell(spells, roll, is_multicast=False):
+	if roll == 8:
+		spell = "FIZZLE 😢" if is_multicast else "MULTICAST!"
 	else:
 		spell = spells[roll - 1]
-	return f"{roll} {spell}"
+	return spell
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -41,21 +42,69 @@ async def reckless(ctx, slot : int = 0):
 		return
 	spell_list = reckless_casting_spells[slot]
 
-	result =  get_spell(spell_list)
-	result += "\n" + get_spell(spell_list)
+	rolls = [ random.randint(1, 8), random.randint(1, 8) ]
+
+	result =  f"{rolls[0]} {get_spell(spell_list, rolls[0])}\n"
+	result += f"{rolls[1]} {get_spell(spell_list, rolls[1])}"
 
 	message = await ctx.send(result)
+	# emojis = [ reaction_emoji[rolls[0] - 1], reaction_emoji[rolls[1] - 1] ]
 
-	watier = asyncio.Event()
-	reaction_waiters[message.id] = watier
-
-	await asyncio.wait_for(watier.wait(), timeout_seconds)
-
+	if 8 not in rolls:
+		return
 	
+	multicast_emoji = bot.get_emoji(settings.get("multicast_emoji"))
+	emojis = [ multicast_emoji ]
+	for emoji in emojis:
+		await message.add_reaction(emoji)
 
-	await ctx.send("it happened")
+	waiter = asyncio.Event()
+	reaction_waiters[message.id] = waiter
+
+	clicked_emoji = None
+	try:
+		while clicked_emoji is None:
+			await asyncio.wait_for(waiter.wait(), timeout_seconds)
+			message = await ctx.fetch_message(message.id)
+			for reaction in message.reactions:
+				if reaction.emoji not in emojis:
+					continue
+				users = await reaction.users().flatten()
+				if ctx.message.author in users:
+					clicked_emoji = reaction.emoji
+			waiter.clear()
+	except asyncio.TimeoutError:
+		clicked_emoji = None
+	finally:
+		del reaction_waiters[message.id]
+
+	for emoji in emojis:
+		await message.remove_reaction(emoji, bot.user)
+
+
+	if clicked_emoji:
+		# for now, this only triggers if its a multicast
+		rolls = [ random.randint(1, 8), random.randint(1, 8) ]
+		lines = []
+		lines.append("__Multicast:__")
+		for i in range(len(rolls)):
+			line = f"{rolls[i]} {get_spell(spell_list, rolls[i], True)}"
+			if rolls[i] != 8 and 8 in rolls:
+				line = f"~~{line}~~"
+			lines.append(line)
+		result += "\n" + "\n".join(lines)
+		await message.edit(content=result)
+
+		# selected_roll = reaction_emoji.index(clicked_emoji) + 1
+		# await ctx.send(f"!spell {get_spell(spell_list, selected_roll)}")
+	else:
+		print("thing not clicked")
 
 
 
 if __name__ == '__main__':
 	bot.run(settings.get("token"))
+
+
+# todo implement only roll once for casting a cantrip
+# todo handle timeout errors
