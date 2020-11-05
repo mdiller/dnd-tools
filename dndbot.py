@@ -44,8 +44,12 @@ async def reckless(ctx, slot : int = 0):
 
 	rolls = [ random.randint(1, 8), random.randint(1, 8) ]
 
-	result =  f"{rolls[0]} {get_spell(spell_list, rolls[0])}\n"
-	result += f"{rolls[1]} {get_spell(spell_list, rolls[1])}"
+	if slot == 0: # only roll once for cantrips table
+		rolls = [ rolls[0] ]
+
+	result = ""
+	for roll in rolls:
+		result += f"{roll} {get_spell(spell_list, roll)}\n"
 
 	message = await ctx.send(result)
 	# emojis = [ reaction_emoji[rolls[0] - 1], reaction_emoji[rolls[1] - 1] ]
