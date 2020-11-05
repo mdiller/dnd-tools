@@ -1,0 +1,47 @@
+
+:root {
+  --list-percent: 55%;
+  --stats-spacing: 0.5%;
+  --stats-left: calc(var(--list-percent) + var(--stats-spacing));
+  --stats-width: calc(100% - var(--stats-spacing) - var(--list-percent));
+}
+
+
+/* THIS FIXES FILTER HIDDEN MODE TO LOOK MUCH BETTER (PINNED STUFF GOES IN SAME PLACE AS NORMAL LIST DOES) */
+
+#listcontainer[style*="display: none;"] + #contentwrapper #sublistcontainer {
+  width: var(--list-percent);
+}
+
+#listcontainer[style*="display: none;"] + #contentwrapper #stat-tabs,
+#listcontainer[style*="display: none;"] + #contentwrapper .wrp-stats-table {
+  position: absolute;
+  left: var(--stats-left);
+  width: var(--stats-width);
+}
+#listcontainer[style*="display: none;"] + #contentwrapper .wrp-stats-table #pagecontent {
+  height: 100%;
+}
+
+#listcontainer[style*="display: none;"] + #contentwrapper #stat-tabs {
+  top: 42px;
+  height: 23px;
+}
+#listcontainer[style*="display: none;"] + #contentwrapper .wrp-stats-table {
+  top: 65px;
+}
+
+#listcontainer[style*="display: none;"] + #contentwrapper .wrp-footer-buttons {
+  width: var(--list-percent);
+  
+}
+
+
+#listcontainer[style*="display: none;"] + #contentwrapper #sublistcontainer .list {
+  max-height: none;
+}
+
+.view-col-group--cancer .container {
+  width: 100%;
+  max-width: 1200px;
+}
