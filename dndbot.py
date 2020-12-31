@@ -11,7 +11,10 @@ with open("settings.json", "r") as f:
 with open("reckless_casting.json", "r") as f:
 	reckless_casting_spells = json.loads(f.read())
 
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix="!")
+
+# remove the default help command
+bot.remove_command("help")
 
 timeout_seconds = 120
 reaction_waiters = {}
@@ -103,7 +106,6 @@ async def reckless(ctx, slot : int = 0):
 		# await ctx.send(f"!spell {get_spell(spell_list, selected_roll)}")
 	else:
 		print("thing not clicked")
-
 
 
 if __name__ == '__main__':
