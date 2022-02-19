@@ -1,0 +1,7 @@
+services:
+  main:
+    container_name: dndbot
+    build: .
+    volumes:
+      - ./settings.json:/code/settings.json
+      - ./redditcache.json:/code/redditcache.json
